@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class data(object):
+class Data(object):
     def __init__(self,params):
         num_samples = params.num_samples
         batch_size = params.batch_size
@@ -47,12 +47,12 @@ class data(object):
         ytest = xtest.copy()
         np.random.RandomState(seed=seed).shuffle(ytest)
 
-        self.r_xtrain = xtrain
-        self.r_ytrain = ytrain
-        self.r_xval = xval
-        self.r_yval = yval
-        self.r_xtest = xtest
-        self.r_ytest = ytest
+        self.random_xtrain = xtrain
+        self.random_ytrain = ytrain
+        self.random_xval = xval
+        self.random_yval = yval
+        self.random_xtest = xtest
+        self.random_ytest = ytest
 
     def get_pseudo_flips(self,num_samples,batch_size,seq_length,dim,train_val_test_split):
         #psuedo flips have equal distribution but there is an obvious pattern 
@@ -62,12 +62,12 @@ class data(object):
         val = np.array([ 1 if i%2==0 else 0 for i in range(self.val_size)]).reshape(-1,batch_size,seq_length,dim)
         test = np.array([ 1 if i%2==0 else 0 for i in range(self.test_size)]).reshape(-1,batch_size,seq_length,dim)
 
-        self.p_xtrain = train
-        self.p_ytrain = (train+1)%2
-        self.p_xval = val
-        self.p_yval = (val+1)%2
-        self.p_xtest = test
-        self.p_ytest = (test+1)%2
+        self.pseudo_xtrain = train
+        self.pseudo_ytrain = (train+1)%2
+        self.pseudo_xval = val
+        self.pseudo_yval = (val+1)%2
+        self.pseudo_xtest = test
+        self.pseudo_ytest = (test+1)%2
 
 
 if __name__ == "__main__":

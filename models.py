@@ -17,8 +17,13 @@ class Model(nn.Module):
         if self.model_type=="LSTM":
             self.model = nn.LSTM(self.input_size,self.hidden_size)
             self.dense = nn.Linear(self.hidden_size,self.output_size)
+        if self.model_type=='RNN':
+            self.model = nn.RNN(self.input_size,self.hidden_size)
+            self.dense = nn.Linear(self.hidden_size,self.output_size)
+        if self.model_type=="Transformer":
+            self.model = Transformer()
 
     def forward(self,inputs):
-        lstm_out, last_cell = self.model(inputs)
-        output = self.dense(lstm_out)
+        out, _ = self.model(inputs)
+        output = self.dense(out)
         return output

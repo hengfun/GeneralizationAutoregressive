@@ -1,4 +1,4 @@
-from utils import data
+from utils import Data
 from models import Model
 import torch
 import torch.nn as nn
@@ -25,12 +25,14 @@ class args(object):
 
 params = args()
 
-d = data(params)
+data = Data(params)
 
 model = Model(params)
 
 for e in range(params.epochs):
-    train_batch_size = d.r_xtrain.shape[0]
+    train_batch_size = data.random_xtrain.shape[0]
     for batch in range(train_batch_size):
-        inputs = torch.from_numpy(d.r_xtrain[batch]).float()
+        inputs = torch.from_numpy(data.random_xtrain[batch]).float() # random train 
+        inputs = torch.from_numpy(data.pseudo_xtrain[batch]).float() # psuedo xtrain data [1,0,1,0]
+
         predict= model(inputs)
