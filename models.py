@@ -9,6 +9,7 @@ class Model(nn.Module):
         self.hidden_size = params.hidden_size
         self.input_size = params.input_size
         self.model_type = params.model_type
+        self.loss = params.loss
         self.output_size = params.dim
         self.device = params.device
         self.build_model()
