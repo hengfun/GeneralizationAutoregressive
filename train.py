@@ -1,5 +1,5 @@
 from utils import data
-from transformer.Models import Transformer
+from models import Model
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -26,26 +26,6 @@ class args(object):
 params = args()
 
 d = data(params)
-
-class Model(nn.Module):
-    def __init__(self,params):
-        super(Model,self).__init__()
-        self.hidden_size = params.hidden_size
-        self.input_size = params.input_size
-        self.model_type = params.model_type
-        self.output_size = params.dim
-        self.device = params.device
-        self.build_model()
-
-    def build_model(self):
-        if self.model_type=="LSTM":
-            self.model = nn.LSTM(self.input_size,self.hidden_size)
-            self.dense = nn.Linear(self.hidden_size,self.output_size)
-
-    def forward(self,inputs):
-        lstm_out, last_cell = self.model(inputs)
-        output = self.dense(lstm_out)
-        return output
 
 model = Model(params)
 
