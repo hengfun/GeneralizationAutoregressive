@@ -1,5 +1,5 @@
 import numpy as np
-
+import torch
 
 class Data(object):
     def __init__(self,params):
@@ -31,9 +31,9 @@ class Data(object):
     def get_random_flips(self,num_samples,batch_size,seq_length,dim,train_val_test_split,seed):
 
         data = np.random.RandomState(seed=seed).randint(0,1+dim,num_samples)
-        train = data[:self.train_size].reshape(-1,batch_size,seq_length,dim)
-        val = data[self.train_size:self.val_size].reshape(-1,batch_size,seq_length,dim)
-        test = data[-self.test_size:].reshape(-1,batch_size,seq_length,dim)
+        train = data[:self.train_size].reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
+        val = data[self.train_size:self.val_size].reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
+        test = data[-self.test_size:].reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
 
         xtrain = train
         ytrain = xtrain.copy()
@@ -47,27 +47,27 @@ class Data(object):
         ytest = xtest.copy()
         np.random.RandomState(seed=seed).shuffle(ytest)
 
-        self.random_xtrain = xtrain
-        self.random_ytrain = ytrain
-        self.random_xval = xval
-        self.random_yval = yval
-        self.random_xtest = xtest
-        self.random_ytest = ytest
+        self.random_xtrain = torch.from_numpy(xtrain).float()
+        self.random_ytrain = torch.from_numpy(ytrain).float()
+        self.random_xval =   torch.from_numpy(xval).float()
+        self.random_yval =   torch.from_numpy(yval).float()
+        self.random_xtest =  torch.from_numpy(xtest).float()
+        self.random_ytest =  torch.from_numpy(ytest).float()
 
     def get_pseudo_flips(self,num_samples,batch_size,seq_length,dim,train_val_test_split):
         #psuedo flips have equal distribution but there is an obvious pattern 
         # for example [0,1,0,1,....]
 
-        train = np.array([ 1 if i%2==0 else 0 for i in range(self.train_size)]).reshape(-1,batch_size,seq_length,dim)
-        val = np.array([ 1 if i%2==0 else 0 for i in range(self.val_size)]).reshape(-1,batch_size,seq_length,dim)
-        test = np.array([ 1 if i%2==0 else 0 for i in range(self.test_size)]).reshape(-1,batch_size,seq_length,dim)
+        train = np.array([ 1 if i%2==0 else 0 for i in range(self.train_size)]).reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
+        val = np.array([ 1 if i%2==0 else 0 for i in range(self.val_size)]).reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
+        test = np.array([ 1 if i%2==0 else 0 for i in range(self.test_size)]).reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
 
-        self.pseudo_xtrain = train
-        self.pseudo_ytrain = (train+1)%2
-        self.pseudo_xval = val
-        self.pseudo_yval = (val+1)%2
-        self.pseudo_xtest = test
-        self.pseudo_ytest = (test+1)%2
+        self.pseudo_xtrain =  torch.from_numpy(train).float()
+        self.pseudo_ytrain =  torch.from_numpy((train+1)%2).float()
+        self.pseudo_xval =    torch.from_numpy(val).float()
+        self.pseudo_yval =    torch.from_numpy((val+1)%2).float()
+        self.pseudo_xtest =   torch.from_numpy(test).float()
+        self.pseudo_ytest =   torch.from_numpy((test+1)%2).float()
 
 
 if __name__ == "__main__":
@@ -83,4 +83,4 @@ if __name__ == "__main__":
             
     params = args()
 
-    d  = data(params)
+    d  = Data(params)
