@@ -6,28 +6,31 @@ import torch.nn.functional as F
 
 class args(object):
     def __init__(self):
-        self.batch_size = 100
-        self.num_samples = 100000
+        self.batch_size = 20
+        self.num_samples = 100
         self.seq_length = 5
         self.num_batches = int(self.num_samples/self.batch_size/self.seq_length)
         self.input_size =1
         self.dim = 1
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.train_val_test_split = [.6,.2,.2] #going to mix in some non-random sequences duh!
+        self.train_val_test_split = [1,0,0] #going to mix in some non-random sequences duh!
         self.seed = 0 
-        self.epochs = 100
-        self.hidden_size = 20
+        self.epochs = 1000
+        self.hidden_size = 1000
         self.layers = 1
         self.model_type = 'LSTM'
         self.learning_rate = 1e-1
         self.random =True
         self.loss = "MSE"
+        self.print_freq = 100
         
 
 params = args()
 
 #dimension [batches, seq_length,batch_size,dim]
 data = Data(params)
+train_batch_size,seq_length,batch_size,dim = data.random_xtrain.shape
+
 model = Model(params)
 
 if params.loss=="MSE":
@@ -36,7 +39,7 @@ else:
     loss_fn = torch.nn.BCEWithLogitsLoss()
 
 optimizer = torch.optim.Adam(model.parameters(), lr=params.learning_rate)
-train_batch_size,seq_length,batch_size,dim = data.random_xtrain.shape
+
 
 for e in range(params.epochs):
     epoch_loss =0
@@ -58,8 +61,7 @@ for e in range(params.epochs):
         loss.backward()
         optimizer.step()
 
-
-    if e%10==0:
+    if e%params.print_freq==0:
         if params.loss!='MSE':
             predict = F.sigmoid(y_predict)
         else:
