@@ -50,23 +50,24 @@ for e in range(params.epochs):
         else:
             inputs = torch.from_numpy(data.pseudo_xtrain[batch]).float() # psuedo xtrain data [1,0,1,0]
             y = torch.from_numpy(data.pseudo_xtrain[batch]).float()
-
         
         y_predict= model(inputs) #output, [seq_length,batch_size,dim]
-        
-        
+               
         loss = loss_fn(y_predict,y)
         epoch_loss +=loss
-        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+
+
+
+
+    if e%10==0:
         if params.loss!='MSE':
             predict = F.sigmoid(y_predict)
         else:
             predict = y_predict
-
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    if e%10==0:
         print("Epoch:{} Loss:{}".format(e,epoch_loss))
         print("Probabilities :{}".format(predict[:,0,:].flatten()))
 
