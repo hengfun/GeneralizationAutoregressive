@@ -10,7 +10,7 @@ class args(object):
     def __init__(self):
         self.batch_size = 100
         self.num_samples = 100000
-        self.seq_length = 10
+        self.seq_length = 5
         self.num_batches = int(self.num_samples/self.batch_size/self.seq_length)
         self.input_size =1
         self.dim = 1
@@ -23,7 +23,7 @@ class args(object):
         self.model_type = 'LSTM'
         self.learning_rate = 1e-1
         self.random =True
-        self.loss = "BCE"
+        self.loss = "MSE"
 
 
 params = args()
@@ -58,7 +58,10 @@ for e in range(params.epochs):
         loss = loss_fn(y_predict,y)
         epoch_loss +=loss
         
-        predict = F.sigmoid(y_predict)
+        if params.loss!='MSE':
+            predict = F.sigmoid(y_predict)
+        else:
+            predict = y_predict
 
         optimizer.zero_grad()
         loss.backward()
