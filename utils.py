@@ -2,35 +2,42 @@ import numpy as np
 import torch
 
 class Data(object):
-    def __init__(self,params):
+    def __init__(self,params,seq_length):
         num_samples = params.num_samples
         batch_size = params.batch_size
-        seq_length = params.seq_length 
         dim = params.dim
         train_val_test_split = params.train_val_test_split
         random_seed = params.seed
+        p_bias = params.p_bias
 
 
         assert dim==1,"we doing coinflips!"
         assert num_samples>batch_size,"to batch or not to batch"
-        assert sum(train_val_test_split)==1.0, 'what kinda splits you smoking?'
+        assert sum(train_val_test_split)==1, 'what kinda splits you smoking?'
         
         self.batch_size = batch_size
-        self.num_samples = num_samples
+        self.num_samples = num_samples*seq_length
         self.dim = dim
+        self.p_bias = p_bias
+        self.seq_length = seq_length
         
         self.train_val_test_split = train_val_test_split
-        self.train_size = int(train_val_test_split[0]*num_samples)
-        self.val_size = int(train_val_test_split[1]*num_samples)
-        self.test_size = int(train_val_test_split[2]*num_samples)
+        self.train_size = int(train_val_test_split[0]*self.num_samples)
+        self.val_size = int(train_val_test_split[1]*self.num_samples)
+        self.test_size = int(train_val_test_split[2]*self.num_samples)
 
         self.seed = random_seed
-        self.get_random_flips(num_samples,batch_size,seq_length,dim,train_val_test_split,random_seed)
-        self.get_pseudo_flips(num_samples,batch_size,seq_length,dim,train_val_test_split) 
+        self.get_random_flips(self.num_samples,batch_size,seq_length,dim,train_val_test_split,random_seed)
+        self.get_pseudo_flips(self.num_samples,batch_size,seq_length,dim,train_val_test_split) 
     
     def get_random_flips(self,num_samples,batch_size,seq_length,dim,train_val_test_split,seed):
 
-        data = np.random.RandomState(seed=seed).randint(0,1+dim,num_samples)
+        if self.p_bias == 0.5:
+            data = np.random.RandomState(seed=seed).randint(0,1+dim,num_samples)
+        else:
+            data = np.random.RandomState(seed=seed).random(num_samples)
+            data = data < self.p_bias
+            data = data.astype(np.int64)
         train = data[:self.train_size].reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
         val = data[self.train_size:self.val_size].reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
         test = data[-self.test_size:].reshape(-1,batch_size,seq_length,dim).swapaxes(2,1)
