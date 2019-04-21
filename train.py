@@ -21,15 +21,15 @@ class args(object):
         self.epochs = 400-1
         self.hidden_size = 10
         self.layers = 2
-        self.model_type = 'LSTM'
+        self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
         self.optim = 'sgd'
         self.learning_rate = 1e-2
         self.random =True
         self.loss = "MSE"
         self.print_freq = 100
         self.save_dir = "logs"
-        if not os.path.exists('/logs'):
-            os.mkdir("./logs")
+        if not os.path.exists('./logs'):
+            os.mkdir("/logs")
         
 
 params = args()
