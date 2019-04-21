@@ -25,7 +25,7 @@ class args(object):
         self.optim = 'sgd'
         self.learning_rate = 1e-2
         self.random =True
-        self.loss = "MSE"
+        self.loss = "MSE" #Options ["MSE","BCE"]
         self.print_freq = 100
         self.save_dir = "logs"
         if not os.path.exists('./logs'):
@@ -50,12 +50,14 @@ true_deviation = {}
 
 for length in range(params.min_seq_length, params.max_seq_length+1):
     print('Seq Length: {0}'.format(length))
+    params.seq_length = length
     model = Model(params)
     if params.optim == 'adam':
         optimizer = torch.optim.Adam(model.parameters(), lr=params.learning_rate)
     elif params.optim == 'sgd':
         optimizer = torch.optim.SGD(model.parameters(), lr=params.learning_rate)
     data = Data(params,length)
+    
     train_batch_size,seq_length,batch_size,dim = data.random_xtrain.shape
     for e in range(params.epochs + 1):
         epoch_loss =0

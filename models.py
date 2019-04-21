@@ -7,6 +7,7 @@ from seq2seq import Seq2seq
 class Model(nn.Module):
     def __init__(self,params):
         super(Model,self).__init__()
+        self.seq_length = params.seq_length
         self.hidden_size = params.hidden_size
         self.input_size = params.input_size
         self.model_type = params.model_type
@@ -27,7 +28,7 @@ class Model(nn.Module):
             self.model = Seq2seq(self.input_size,self.hidden_size,self.layers)   
             self.dense = nn.Linear(self.hidden_size,self.output_size)
         if self.model_type=="Transformer":
-            self.model = Transformer()
+            self.model = Transformer(self.input_size,self.input_size,self.seq_length)
 
     def forward(self,inputs):
         hidden, _ = self.model(inputs)
