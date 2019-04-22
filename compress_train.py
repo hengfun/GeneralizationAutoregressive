@@ -10,10 +10,10 @@ from torch.utils.data import Dataset, DataLoader
 class args(object):
     def __init__(self):
         self.batch_size = 50
-        self.seq_length = 100
+        self.seq_length = 3200
         self.input_size = 1
         self.dim = 1
-        self.p_bias = 0.5
+        self.p_bias = 0.8
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.seed = 0 
         self.epochs = 500
@@ -47,16 +47,18 @@ coin_dataset = CompressData(params.p_bias, params.seq_length, params.epochs*para
 dataloader = DataLoader(coin_dataset, batch_size=params.batch_size,
                         shuffle=False, num_workers=1)
 
+sigmoid = torch.nn.Sigmoid()
 for epoch, X in enumerate(dataloader):
     if epoch > params.epochs:
         break
     X_hat = model(X.float())
     loss = loss_fn(X_hat, X.float())
-    acc = (X_hat > 0.5) == X
+    #acc = (sigmoid(X_hat) > 0.5) == X
     optim.zero_grad()
     loss.backward()
     optim.step()
     if epoch % params.print_freq == 0:
+        acc = (sigmoid(X_hat) > 0.5) == X
         print('Step {0} | {1} loss {2} | Acc {3}'.format(epoch, params.loss, loss.item(), acc.float().mean().item()))
 
 
