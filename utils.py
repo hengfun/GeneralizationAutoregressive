@@ -5,11 +5,12 @@ from torch.utils.data import Dataset, DataLoader
 
 
 class CompressData(Dataset):
-    def __init__(self,p_bias, seq_len):
+    def __init__(self,p_bias, seq_len, num_epochs):
         self.p_bias = p_bias
         self.seq_len = seq_len
+        self.num_epochs = num_epochs
     def __len__(self):
-        return 2**self.seq_len
+        return self.num_epochs
     def __getitem__(self,idx):
         x = torch.rand(self.seq_len,1)
         x = x < self.p_bias
