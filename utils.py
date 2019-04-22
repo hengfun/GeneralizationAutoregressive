@@ -11,11 +11,10 @@ class CompressData(Dataset):
     def __len__(self):
         return 2**self.seq_len
     def __getitem__(self,idx):
-        x = torch.rand(self.seq_len)
+        x = torch.rand(self.seq_len,1)
         x = x < self.p_bias
         return x
 
-    
 
 
 
