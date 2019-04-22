@@ -1,6 +1,24 @@
 import numpy as np
 import torch
 
+from torch.utils.data import Dataset, DataLoader
+
+
+class CompressData(Dataset):
+    def __init__(self,p_bias, seq_len):
+        self.p_bias = p_bias
+        self.seq_len = seq_len
+    def __len__(self):
+        return 2**self.seq_len
+    def __getitem__(self,idx):
+        x = torch.rand(self.seq_len)
+        x = x < self.p_bias
+        return x
+
+    
+
+
+
 class Data(object):
     def __init__(self,params,seq_length):
         num_samples = params.num_samples
