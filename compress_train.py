@@ -10,10 +10,10 @@ from torch.utils.data import Dataset, DataLoader
 class args(object):
     def __init__(self):
         self.batch_size = 50
-        self.seq_length = 3200
+        self.seq_length = 20
         self.input_size = 1
         self.dim = 1
-        self.p_bias = 0.8
+        self.p_bias = 0.5
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.seed = 0 
         self.epochs = 500

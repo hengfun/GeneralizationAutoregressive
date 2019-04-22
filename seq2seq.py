@@ -15,5 +15,5 @@ class Seq2seq(nn.Module):
         self.decoder = nn.LSTM(self.input_size,self.hidden_size,self.layers)
     def forward(self,inputs):
         enc_out, enc_state = self.encoder(inputs)
-        dec_out, dec_state = self.decoder(inputs,enc_state)
+        dec_out, dec_state = self.decoder(torch.zeros_like(inputs),enc_state)
         return dec_out,dec_state
