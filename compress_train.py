@@ -9,19 +9,19 @@ from torch.utils.data import Dataset, DataLoader
 
 class args(object):
     def __init__(self):
-        self.batch_size = 50
-        self.seq_length = 20
+        self.batch_size = 80
+        self.seq_length = 4
         self.input_size = 1
         self.dim = 1
         self.p_bias = 0.5
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.seed = 0 
-        self.epochs = 500
-        self.hidden_size = 1
+        self.epochs = 5000
+        self.hidden_size = 100
         self.layers = 2
         self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
         self.optim = 'adam' # ['sgd', 'adam']
-        self.learning_rate = 1e-2
+        self.learning_rate = 1e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
         self.print_freq = 50
         self.save_dir = "logs"
