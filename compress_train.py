@@ -15,7 +15,7 @@ class args(object):
         self.input_size = 1
         self.dim = 1
         self.p_bias = 0.5
-        self.stop_limit = 20
+        self.stop_limit = 50
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.device = torch.device('cpu')
         self.seed = 0 
@@ -27,7 +27,7 @@ class args(object):
         self.optim = 'adam' # ['sgd', 'adam']
         self.learning_rate = 1e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
-        self.print_freq = 50
+        self.print_freq = 1000
         self.save_dir = "logs"
 
         #if not os.path.exists('./logs'):
@@ -69,7 +69,7 @@ while not done:
         data_loss ={i:0 for i in range(0,params.epochs)}
         
         for epoch, X in enumerate(dataloader):
-            start = timer()
+
             if epoch > params.epochs:
                 break
             X = X.to(params.device)
@@ -97,13 +97,13 @@ while not done:
 
             if epoch % params.print_freq == 0:
                 # acc = (sigmoid(X_hat) > 0.5) == X
-                end = timer()
-                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f} |time {:1.5f}'.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item(),end-start))
+
+                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f} '.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item()))
                 
 
         #save logs
-        pd.DataFrame(data_acc).to_pickle('Acc_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
-        pd.DataFrame(data_loss).to_pickle('Loss_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
+        pd.DataFrame(data_acc,index=['acc']).to_pickle('Acc_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
+        pd.DataFrame(data_loss,index=['loss']).to_pickle('Loss_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
 
     if not solved:
         print('Not solved, double hidden size')
