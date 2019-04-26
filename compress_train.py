@@ -49,6 +49,7 @@ solved=False
 done = False
 while not done:
     params.hidden_size = new_hidden_size
+
     for seed in range(0,params.num_seeds):
         stop_count = 0
         prev_loss = 100
@@ -96,7 +97,7 @@ while not done:
         # pd.DataFrame(data).to_pickle('Seed{}Len{}Hidden{}.pickle'.format(seed,seq_length,hidden_size))
 
     if not solved:
-        print('Not solved, double hiden size')
+        print('Not solved, double hidden size')
         prev_hidden_size = new_hidden_size
         new_hidden_size= prev_hidden_size*2
         print('New Hidden size {}, Prev Hidden size {}'.format(new_hidden_size,prev_hidden_size))
