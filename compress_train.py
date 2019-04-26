@@ -10,15 +10,15 @@ import numpy as np
 
 class args(object):
     def __init__(self):
-        self.batch_size = 256
-        self.seq_length = 5
+        self.batch_size = 512
+        self.seq_length = 32
         self.input_size = 1
         self.dim = 1
         self.p_bias = 0.5
         self.stop_limit = 20
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.seed = 0 
-        self.num_seeds =2
+        self.num_seeds =5
         self.epochs = 100000
         self.hidden_size = 10
         self.layers = 2
@@ -64,7 +64,8 @@ while not done:
         coin_dataset = CompressData(params.p_bias, params.seq_length, params.epochs*params.batch_size)
         dataloader = DataLoader(coin_dataset, batch_size=params.batch_size,
                                 shuffle=False, num_workers=12)
-        data ={i:0 for i in range(0,params.epochs)}
+        data_acc ={i:0 for i in range(0,params.epochs)}
+        data_loss ={i:0 for i in range(0,params.epochs)}
         for epoch, X in enumerate(dataloader):
             if epoch > params.epochs:
                 break
@@ -76,7 +77,9 @@ while not done:
             optim.zero_grad()
             loss.backward()
             optim.step()
-            data[epoch] = [loss.item(),acc.item()]
+            data_acc[epoch] = acc.item()
+            data_loss[epoch] = loss.item()
+
             acc_is_100 = int(acc.item())==1
             if prev_loss - loss.item()  < 1e-4 or acc_is_100:
                 stop_count += 1
@@ -94,7 +97,8 @@ while not done:
                 print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f}'.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item()))
         
         #save logs
-        # pd.DataFrame(data).to_pickle('Seed{}Len{}Hidden{}.pickle'.format(seed,seq_length,hidden_size))
+        pd.DataFrame(data_acc).to_pickle('Acc_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
+        pd.DataFrame(data_loss).to_pickle('Loss_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
 
     if not solved:
         print('Not solved, double hidden size')
