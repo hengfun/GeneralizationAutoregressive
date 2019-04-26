@@ -118,7 +118,10 @@ while not done:
         new_hidden_size = int((current_hidden_size+prev_hidden_size)/2)
         prev_hidden_size = current_hidden_size
         print('New Hidden size {}, prev Hidden size {}'.format(new_hidden_size,prev_hidden_size))
-        if abs(prev_hidden_size-new_hidden_size)<1:
+        diff = abs(prev_hidden_size-new_hidden_size)
+        print('Diff{}'.format(diff))
+        if diff<1:
+            print('Converged, diff {}<1'.format(diff))
             done=True
         
 
