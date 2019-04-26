@@ -11,7 +11,7 @@ import numpy as np
 class args(object):
     def __init__(self):
         self.batch_size = 256
-        self.seq_length = 10
+        self.seq_length = 5
         self.input_size = 1
         self.dim = 1
         self.p_bias = 0.5
@@ -19,7 +19,7 @@ class args(object):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.seed = 0 
         self.num_seeds =2
-        self.epochs = 300
+        self.epochs = 100000
         self.hidden_size = 10
         self.layers = 2
         self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
@@ -42,20 +42,9 @@ else:
 
 sigmoid = torch.nn.Sigmoid()
 
-stop_count = 0
-prev_loss = 100
-hidden_size = 1
-seq_length=5
-
-solved=False
-params.seq_length =seq_length
-params.hidden_size = max(hidden_size,1)
-done = False
-
-
 prev_hidden_size = 1
-current_hidden_size =1
 new_hidden_size = 1
+
 solved=False
 done = False
 while not done:
@@ -101,27 +90,27 @@ while not done:
 
             if epoch % params.print_freq == 0:
                 # acc = (sigmoid(X_hat) > 0.5) == X
-                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f}'.format(seed,seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item()))
+                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f}'.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item()))
         
         #save logs
         # pd.DataFrame(data).to_pickle('Seed{}Len{}Hidden{}.pickle'.format(seed,seq_length,hidden_size))
 
     if not solved:
-        print('not solved, double hiden size')
+        print('Not solved, double hiden size')
         prev_hidden_size = new_hidden_size
         new_hidden_size= prev_hidden_size*2
-        print('New Hidden size {}, prev Hidden size {}'.format(new_hidden_size,prev_hidden_size))
+        print('New Hidden size {}, Prev Hidden size {}'.format(new_hidden_size,prev_hidden_size))
     else:
         #solved
-        print('solved, reduce hidden size')
+        print('Solved, Reduce hidden size')
         current_hidden_size = new_hidden_size
         new_hidden_size = int((current_hidden_size+prev_hidden_size)/2)
         prev_hidden_size = current_hidden_size
-        print('New Hidden size {}, prev Hidden size {}'.format(new_hidden_size,prev_hidden_size))
+        print('New Hidden size {}, Prev Hidden size {}'.format(new_hidden_size,prev_hidden_size))
         diff = abs(prev_hidden_size-new_hidden_size)
-        print('Diff{}'.format(diff))
+        print('Abs(Prev Hidden - New Hidden) = Diff {}'.format(diff))
         if diff<1:
-            print('Converged, diff {}<1'.format(diff))
+            print('Done, diff of {} <1'.format(diff))
             done=True
         
 
