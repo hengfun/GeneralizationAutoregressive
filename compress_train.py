@@ -7,16 +7,17 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import numpy as np
-
+from timeit import default_timer as timer
 class args(object):
     def __init__(self):
-        self.batch_size = 512
+        self.batch_size = 256
         self.seq_length = 32
         self.input_size = 1
         self.dim = 1
         self.p_bias = 0.5
         self.stop_limit = 20
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # self.device = torch.device('cpu')
         self.seed = 0 
         self.num_seeds =5
         self.epochs = 100000
@@ -66,7 +67,9 @@ while not done:
                                 shuffle=False, num_workers=12)
         data_acc ={i:0 for i in range(0,params.epochs)}
         data_loss ={i:0 for i in range(0,params.epochs)}
+        
         for epoch, X in enumerate(dataloader):
+            start = timer()
             if epoch > params.epochs:
                 break
             X = X.to(params.device)
@@ -94,8 +97,10 @@ while not done:
 
             if epoch % params.print_freq == 0:
                 # acc = (sigmoid(X_hat) > 0.5) == X
-                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f}'.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item()))
-        
+                end = timer()
+                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f} |time {:1.5f}'.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item(),end-start))
+                
+
         #save logs
         pd.DataFrame(data_acc).to_pickle('Acc_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
         pd.DataFrame(data_loss).to_pickle('Loss_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
