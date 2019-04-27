@@ -15,9 +15,9 @@ class Model(nn.Module):
         self.loss = params.loss
         self.output_size = params.dim
         self.device = params.device
-        self.build_model()
+        self.build_model(rnn_type=params.rnn_type)
 
-    def build_model(self):
+    def build_model(self, rnn_type=None):
         if self.model_type=="LSTM":
             self.model = nn.LSTM(self.input_size,self.hidden_size,self.layers)
             self.dense = nn.Linear(self.hidden_size,self.output_size)
@@ -25,7 +25,7 @@ class Model(nn.Module):
             self.model = nn.RNN(self.input_size,self.hidden_size)
             self.dense = nn.Linear(self.hidden_size,self.output_size)
         if self.model_type == "Seq2seq":
-            self.model = Seq2seq(self.input_size,self.hidden_size,self.layers)   
+            self.model = Seq2seq(self.input_size,self.hidden_size,self.layers, rnn=rnn_type)   
             self.dense = nn.Linear(self.hidden_size,self.output_size)
         if self.model_type=="Transformer":
             self.model = Transformer(self.input_size,self.input_size,self.seq_length)

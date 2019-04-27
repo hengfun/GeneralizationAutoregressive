@@ -10,24 +10,25 @@ import numpy as np
 from timeit import default_timer as timer
 class args(object):
     def __init__(self):
-        self.batch_size = 256
+        self.batch_size = 60
         self.seq_length = 32
         self.input_size = 1
         self.dim = 1
-        self.p_bias = 0.5
+        self.p_bias = 0.8
         self.stop_limit = 50
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # self.device = torch.device('cpu')
         self.seed = 0 
-        self.num_seeds =5
-        self.epochs = 100000
+        self.num_seeds =3
+        self.epochs = 14000
         self.hidden_size = 10
         self.layers = 2
         self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
-        self.optim = 'adam' # ['sgd', 'adam']
-        self.learning_rate = 1e-3
+        self.rnn_type = 'GRU'
+        self.optim = 'adam' # ['sgd', 'adam'] 
+        self.learning_rate = 3e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
-        self.print_freq = 1000
+        self.print_freq = 200
         self.save_dir = "logs"
 
         #if not os.path.exists('./logs'):
@@ -43,8 +44,8 @@ else:
 
 sigmoid = torch.nn.Sigmoid()
 
-prev_hidden_size = 1
-new_hidden_size = 1
+prev_hidden_size = 16
+new_hidden_size = 32
 
 solved=False
 done = False
@@ -62,12 +63,14 @@ while not done:
         model = model.to(params.device)
         if params.optim == 'sgd':
             optim = torch.optim.SGD(model.parameters(), params.learning_rate)
-        if params.optim == 'adam':
+        elif params.optim == 'adam':
             optim = torch.optim.Adam(model.parameters(), params.learning_rate)
+        else:
+            raise NotImplementedError(params.optim)
 
         coin_dataset = CompressData(params.p_bias, params.seq_length, params.epochs*params.batch_size)
         dataloader = DataLoader(coin_dataset, batch_size=params.batch_size,
-                                shuffle=False, num_workers=12)
+                                shuffle=False, num_workers=4)
         data_acc ={i:0 for i in range(0,params.epochs)}
         data_loss ={i:0 for i in range(0,params.epochs)}
         
