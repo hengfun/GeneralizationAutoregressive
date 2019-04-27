@@ -8,16 +8,18 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import numpy as np
 from timeit import default_timer as timer
+
 class args(object):
     def __init__(self):
-        self.batch_size = 256
-        self.seq_length = 32
+        self.batch_size = 128
+        self.seq_length = 28
         self.input_size = 1
         self.dim = 1
         self.p_bias = 0.5
         self.stop_limit = 50
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        # self.device = torch.device('cpu')
+        self.clip_grad =True
+        self.grad_norm = 1
         self.seed = 0 
         self.num_seeds =5
         self.epochs = 100000
@@ -25,7 +27,7 @@ class args(object):
         self.layers = 2
         self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
         self.optim = 'adam' # ['sgd', 'adam']
-        self.learning_rate = 1e-3
+        self.learning_rate = 3e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
         self.print_freq = 1000
         self.save_dir = "logs"
@@ -43,8 +45,8 @@ else:
 
 sigmoid = torch.nn.Sigmoid()
 
-prev_hidden_size = 1
-new_hidden_size = 1
+prev_hidden_size = 0
+new_hidden_size = 28
 
 solved=False
 done = False
@@ -79,6 +81,8 @@ while not done:
             acc = ((sigmoid(X_hat) > 0.5) == X).float().mean()
             optim.zero_grad()
             loss.backward()
+            if params.clip_grad:
+                torch.nn.utils.clip_grad_norm(model.parameters(),params.grad_norm)
             optim.step()
             data_acc[epoch] = acc.item()
             data_loss[epoch] = loss.item()
