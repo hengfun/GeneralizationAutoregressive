@@ -16,26 +16,26 @@ class args(object):
 
         self.input_size = 1
         self.dim = 1
-        self.p_bias = 0.8
+        self.p_bias = 0.5
         self.stop_limit = 50
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clip_grad =True
-        self.grad_norm = 1
+        self.grad_norm = 5
         self.seed = 0 
         self.num_seeds =3
-        self.epochs = 14000
+        self.epochs = 1
         self.hidden_size = 10
         self.layers = 2
         self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
-        self.rnn_type = 'GRU'
+        self.rnn_type = 'LSTM'
         self.optim = 'adam' # ['sgd', 'adam'] 
         self.learning_rate = 3e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
         self.print_freq = 200
         self.save_dir = "logs"
-
-        #if not os.path.exists('./logs'):
-            #os.mkdir("/logs")
+        if not os.path.exists('./logs/solved') or not os.path.exists('./logs/failed'):
+            os.mkdir("./logs/solved/")
+            os.mkdir("./logs/failed/")
         
 
 params = args()
@@ -78,7 +78,7 @@ while not done:
         data_loss ={i:0 for i in range(0,params.epochs)}
         
         for epoch, X in enumerate(dataloader):
-
+            start = timer()
             if epoch > params.epochs:
                 break
             X = X.to(params.device)
@@ -89,7 +89,7 @@ while not done:
             optim.zero_grad()
             loss.backward()
             if params.clip_grad:
-                torch.nn.utils.clip_grad_norm(model.parameters(),params.grad_norm)
+                torch.nn.utils.clip_grad_norm_(model.parameters(),params.grad_norm)
             optim.step()
             data_acc[epoch] = acc.item()
             data_loss[epoch] = loss.item()
@@ -106,16 +106,19 @@ while not done:
                     break
             else:
                 stop_count = 0
-
+            end = timer()
             if epoch % params.print_freq == 0:
                 # acc = (sigmoid(X_hat) > 0.5) == X
-
-                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f} '.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item()))
                 
+                print('Seed {} | Seq_len {}| Hidden {} | Step {} | {} loss {:1.7f} | Acc {:1.6f} | time {:2.4f}'.format(seed,params.seq_length,new_hidden_size,epoch, params.loss, loss.item(), acc.item(),end-start))
 
-        #save logs
-        pd.DataFrame(data_acc,index=['acc']).to_pickle('Acc_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
-        pd.DataFrame(data_loss,index=['loss']).to_pickle('Loss_Seed{}Len{}Hidden{}.pickle'.format(seed,params.seq_length,new_hidden_size))
+        #Logs
+        if solved:
+            sub_directory = 'solved'
+        else:
+            sub_directory = 'failed'
+        pd.DataFrame(data_acc,index=['acc']).to_pickle(os.path.join(params.save_dir,sub_directory,'Len{}Hidden{}Seed{}.pickle'.format(seed,params.seq_length,new_hidden_size)))
+        
 
     if not solved:
         print('Not solved, double hidden size')
