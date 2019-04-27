@@ -13,23 +13,25 @@ class args(object):
     def __init__(self):
         self.batch_size = 128
         self.seq_length = 28
+
         self.input_size = 1
         self.dim = 1
-        self.p_bias = 0.5
+        self.p_bias = 0.8
         self.stop_limit = 50
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.clip_grad =True
         self.grad_norm = 1
         self.seed = 0 
-        self.num_seeds =5
-        self.epochs = 100000
+        self.num_seeds =3
+        self.epochs = 14000
         self.hidden_size = 10
         self.layers = 2
         self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
-        self.optim = 'adam' # ['sgd', 'adam']
+        self.rnn_type = 'GRU'
+        self.optim = 'adam' # ['sgd', 'adam'] 
         self.learning_rate = 3e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
-        self.print_freq = 1000
+        self.print_freq = 200
         self.save_dir = "logs"
 
         #if not os.path.exists('./logs'):
@@ -52,8 +54,11 @@ solved=False
 done = False
 while not done:
     params.hidden_size = new_hidden_size
+    solved = False
 
     for seed in range(0,params.num_seeds):
+        if solved:
+            continue
         stop_count = 0
         prev_loss = 100
 
@@ -61,12 +66,14 @@ while not done:
         model = model.to(params.device)
         if params.optim == 'sgd':
             optim = torch.optim.SGD(model.parameters(), params.learning_rate)
-        if params.optim == 'adam':
+        elif params.optim == 'adam':
             optim = torch.optim.Adam(model.parameters(), params.learning_rate)
+        else:
+            raise NotImplementedError(params.optim)
 
         coin_dataset = CompressData(params.p_bias, params.seq_length, params.epochs*params.batch_size)
         dataloader = DataLoader(coin_dataset, batch_size=params.batch_size,
-                                shuffle=False, num_workers=12)
+                                shuffle=False, num_workers=4)
         data_acc ={i:0 for i in range(0,params.epochs)}
         data_loss ={i:0 for i in range(0,params.epochs)}
         
@@ -94,10 +101,11 @@ while not done:
                     print('Converged, stoping after {0} steps'.format(epoch))
                     
                     print('last Acc {0}'.format(acc.item()))
-                    solved =True
+                    if acc_is_100:
+                        solved =True
                     break
             else:
-                stop_count = stop_count // 2
+                stop_count = 0
 
             if epoch % params.print_freq == 0:
                 # acc = (sigmoid(X_hat) > 0.5) == X
