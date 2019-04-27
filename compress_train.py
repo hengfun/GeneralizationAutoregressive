@@ -50,8 +50,11 @@ solved=False
 done = False
 while not done:
     params.hidden_size = new_hidden_size
+    solved = False
 
     for seed in range(0,params.num_seeds):
+        if solved:
+            continue
         stop_count = 0
         prev_loss = 100
 
@@ -90,10 +93,11 @@ while not done:
                     print('Converged, stoping after {0} steps'.format(epoch))
                     
                     print('last Acc {0}'.format(acc.item()))
-                    solved =True
+                    if acc_is_100:
+                        solved =True
                     break
             else:
-                stop_count = stop_count // 2
+                stop_count = 0
 
             if epoch % params.print_freq == 0:
                 # acc = (sigmoid(X_hat) > 0.5) == X
