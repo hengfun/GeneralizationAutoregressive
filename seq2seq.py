@@ -32,14 +32,14 @@ class Seq2seq(nn.Module):
             if "bias_hh" in name:
                 #weights are initialized 
                 #(b_hi|b_hf|b_hg|b_ho), 
-                weights[self.hidden_size:self.hidden_size].data.fill_(self.forget_bias)
+                weights[self.hidden_size:self.hidden_size*2].data.fill_(self.forget_bias)
             elif 'bias_ih' in name:
                  #(b_ii|b_if|b_ig|b_io)
                 pass
             elif "weight_hh" in name:
-                weights = self.initializer_hh(weights)
+                self.initializer_hh(weights)
             elif 'weight_ih' in name:
-                weights = self.initializer_ih(weights)
+                self.initializer_ih(weights)
         return lstm
 
     def forward(self,inputs):
