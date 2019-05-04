@@ -11,7 +11,7 @@ from timeit import default_timer as timer
 
 class args(object):
     def __init__(self):
-        self.batch_size = 200
+        self.batch_size = 1
         self.seq_length = 64
         self.input_size = 1
         self.dim = 1
@@ -26,14 +26,14 @@ class args(object):
         self.epochs = 200000
         self.hidden_size = 10
         self.layers = 1
-        self.model_type = 'Seq2seq' #Options ["LSTM","RNN","Seq2seq","Transfomer"]
+        self.model_type = "Transformer" #Options ["LSTM","RNN","Seq2seq","Transfomer"]
         self.rnn_type = 'LSTM'
         self.optim = 'adam' # ['sgd', 'adam'] 
-        self.learning_rate = 4e-3
+        self.learning_rate = 3e-3
         self.loss = "BCE" #Options ["MSE","BCE"]
         self.print_freq = 200
         self.save_dir = "logs"
-        self.seq_lengths = [10,20,30,40,50,70,100,200,500]
+        self.seq_lengths = [100,20,30,40,50,70,100,200,500]
         # if not os.path.exists('./logs/solved') or not os.path.exists('./logs/failed'):
         #     os.mkdir("./logs/solved/")
         #     os.mkdir("./logs/failed/")
@@ -56,8 +56,8 @@ done = False
 
 results = {}
 for seq_len in params.seq_lengths:
-    prev_hidden_size = 0
-    new_hidden_size = seq_len
+    prev_hidden_size = 1
+    new_hidden_size = 10 #seq_len
     while not done:
         params.hidden_size = new_hidden_size
         params.seq_length = seq_len
@@ -81,7 +81,7 @@ for seq_len in params.seq_lengths:
 
             coin_dataset = CompressData(params.p_bias, params.seq_length, params.epochs*params.batch_size)
             dataloader = DataLoader(coin_dataset, batch_size=params.batch_size,
-                                    shuffle=False, num_workers=4)
+                                    shuffle=False, num_workers=0)
             data_acc ={i:0 for i in range(0,params.epochs)}
             # data_loss ={i:0 for i in range(0,params.epochs)}
             
@@ -90,7 +90,7 @@ for seq_len in params.seq_lengths:
                 # print(epoch,params.epochs)
                 if epoch > params.epochs:
                     break
-                X = X.to(params.device)
+                X = X.to(params.device).squeeze(0)
                 
                 X_hat = model(X.float())
                 loss = loss_fn(X_hat, X.float())

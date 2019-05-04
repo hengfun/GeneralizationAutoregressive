@@ -84,7 +84,9 @@ class Encoder(nn.Module):
         non_pad_mask = get_non_pad_mask(src_seq)
 
         # -- Forward
-        enc_output = self.src_word_emb(src_seq) + self.position_enc(src_pos)
+        # enc_output = self.src_word_emb(src_seq) + self.position_enc(src_pos)
+        temp = self.position_enc(src_pos)
+        enc_output = src_seq.unsqueeze(-1) + temp
 
         for enc_layer in self.layer_stack:
             enc_output, enc_slf_attn = enc_layer(
@@ -135,7 +137,7 @@ class Decoder(nn.Module):
         dec_enc_attn_mask = get_attn_key_pad_mask(seq_k=src_seq, seq_q=tgt_seq)
 
         # -- Forward
-        dec_output = self.tgt_word_emb(tgt_seq) + self.position_enc(tgt_pos)
+        dec_output = tgt_seq.unsqueeze(-1) + self.position_enc(tgt_pos)
 
         for dec_layer in self.layer_stack:
             dec_output, dec_slf_attn, dec_enc_attn = dec_layer(
@@ -162,6 +164,7 @@ class Transformer(nn.Module):
             n_layers=6, n_head=8, d_k=64, d_v=64, dropout=0.1,
             tgt_emb_prj_weight_sharing=True,
             emb_src_tgt_weight_sharing=True):
+        
 
         super().__init__()
 
@@ -170,6 +173,9 @@ class Transformer(nn.Module):
             d_word_vec=d_word_vec, d_model=d_model, d_inner=d_inner,
             n_layers=n_layers, n_head=n_head, d_k=d_k, d_v=d_v,
             dropout=dropout)
+
+        self.compress_fc = nn.Linear(len_max_seq*d_model,d_model)
+        self.decompress_fc = nn.Linear(d_model, len_max_seq*d_model,d_model)
 
         self.decoder = Decoder(
             n_tgt_vocab=n_tgt_vocab, len_max_seq=len_max_seq,
@@ -199,10 +205,13 @@ class Transformer(nn.Module):
 
     def forward(self, src_seq, src_pos, tgt_seq, tgt_pos):
 
-        tgt_seq, tgt_pos = tgt_seq[:, :-1], tgt_pos[:, :-1]
+        # tgt_seq, tgt_pos = tgt_seq[:, :-1], tgt_pos[:, :-1]
 
         enc_output, *_ = self.encoder(src_seq, src_pos)
-        dec_output, *_ = self.decoder(tgt_seq, tgt_pos, src_seq, enc_output)
+        #enc_output_compressed = self.compress_fc(enc_output.view(-1))
+        enc_output_decompressed = enc_output #self.decompress_fc(enc_output_compressed).view(enc_output.size())
+        dec_output, *_ = self.decoder((tgt_seq), tgt_pos, torch.zeros_like(src_seq), enc_output_decompressed)
+        # return dec_output
         seq_logit = self.tgt_word_prj(dec_output) * self.x_logit_scale
 
-        return seq_logit.view(-1, seq_logit.size(2))
+        return seq_logit.squeeze(-1)

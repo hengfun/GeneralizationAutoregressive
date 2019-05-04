@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 from transformer.Models import Transformer
 from seq2seq import Seq2seq
 
@@ -15,6 +16,8 @@ class Model(nn.Module):
         self.loss = params.loss
         self.output_size = params.dim
         self.device = params.device
+        self.batch_size = params.batch_size
+        
         self.build_model(rnn_type=params.rnn_type)
 
     def build_model(self, rnn_type=None):
@@ -28,9 +31,20 @@ class Model(nn.Module):
             self.model = Seq2seq(self.input_size,self.hidden_size,self.layers, rnn=rnn_type)   
             self.dense = nn.Linear(self.hidden_size,self.output_size)
         if self.model_type=="Transformer":
-            self.model = Transformer(self.input_size,self.input_size,self.seq_length)
-
+            # self.pos = torch.from_numpy(np.tile([i+1 for i in range(0,self.seq_length)],self.batch_size).reshape(-1,self.seq_length)).long().to(self.device)
+            self.pos = (torch.arange(self.seq_length)+1).view(-1,1).to(self.device)#.repeat(1,)
+            self.model = Transformer(self.input_size,self.input_size,self.seq_length,
+                                    d_word_vec=self.hidden_size,d_model=self.hidden_size,
+                                    d_inner=self.hidden_size*4,n_layers=1,
+                                    tgt_emb_prj_weight_sharing=False,
+                                    emb_src_tgt_weight_sharing=False)
+            
     def forward(self,inputs):
-        hidden, _ = self.model(inputs)
-        logits = self.dense(hidden)
+        if self.model_type=="Transformer":
+            logits = self.model(inputs,self.pos,inputs,self.pos)
+            # logits = hidden
+        else:
+            hidden, _ = self.model(inputs)
+            logits = self.dense(hidden)
         return logits
+    

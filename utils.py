@@ -3,7 +3,6 @@ import torch
 
 from torch.utils.data import Dataset, DataLoader
 
-
 class CompressData(Dataset):
     def __init__(self,p_bias, seq_len, num_epochs):
         self.p_bias = p_bias
@@ -94,18 +93,22 @@ class Data(object):
         self.pseudo_xtest =   torch.from_numpy(test).float()
         self.pseudo_ytest =   torch.from_numpy((test+1)%2).float()
 
-
-if __name__ == "__main__":
-    #test 
-    class args(object):
-        def __init__(self):
-            self.batch_size = 250
-            self.num_samples = 100000
-            self.seq_length = 10
-            self.dim = 1
-            self.train_val_test_split = [.6,.2,.2] #going to mix in some non-random sequences duh!
-            self.seed = 0 
+# if __name__ == "__main__":
+#     #test 
+#     class args(object):
+#         def __init__(self):
+#             self.batch_size = 250
+#             self.num_samples = 100000
+#             self.seq_length = 10
+#             self.dim = 1
+#             self.train_val_test_split = [.6,.2,.2] #going to mix in some non-random sequences duh!
+#             self.seed = 0 
             
-    params = args()
+#     params = args()
 
-    d  = Data(params)
+#     d  = Data(params)
+
+# if __name__ == "__main__":
+#     data = CompressData(.5,10,2)
+#     a = np.random.randn(2,5)
+#     b = collate_fn(a)
